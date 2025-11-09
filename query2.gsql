@@ -1,0 +1,26 @@
+CREATE QUERY recommendProducts(VERTEX<Customer> inputCustomer, INT topK = 3) FOR GRAPH username_fraud_analysis {
+  
+  SumAccum<INT> @score;
+  
+  Start = {inputCustomer};
+  
+  // Step 1: Get products first
+  MyProducts = SELECT p
+               FROM Start:c -(PURCHASED)-> Product:p;
+  
+  // Step 2: Find other customers who bought these products
+  SimilarCustomers = SELECT c2
+                     FROM MyProducts:p -(_)- Customer:c2
+                     WHERE c2 != inputCustomer;
+  
+  // Step 3: Get products from similar customers
+  Recommendations = SELECT p2
+                    FROM SimilarCustomers:c -(PURCHASED)-> Product:p2
+                    ACCUM p2.@score += 1
+                    ORDER BY p2.@score DESC
+                    LIMIT topK;
+  
+  PRINT Recommendations[Recommendations.id, Recommendations.name, Recommendations.price, Recommendations.@score];
+}
+
+INSTALL QUERY recommendProducts

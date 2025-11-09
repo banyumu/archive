@@ -1,0 +1,12 @@
+CREATE QUERY getCustomerPurchases(VERTEX<Customer> inputCustomer) FOR GRAPH username_fraud_analysis {
+  
+  Start = {inputCustomer};
+  
+  // Get all products purchased by the customer
+  Result = SELECT p
+           FROM Start:c -(PURCHASED:e)-> Product:p;
+  
+  PRINT Result;
+}
+
+INSTALL QUERY getCustomerPurchases
